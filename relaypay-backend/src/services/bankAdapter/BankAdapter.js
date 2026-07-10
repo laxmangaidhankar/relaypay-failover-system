@@ -1,3 +1,20 @@
-class BankAdapter {}
+class BankAdapter {
+  async checkBalance(accountId){
 
-module.exports = BankAdapter;
+  }
+
+  async initiateTransfer({ fromAccountId, toAccountId, amount, transactionId}){
+     
+  }
+
+  async getTransferStatus(bankReferenceId) {
+    
+  }
+
+
+}
+
+
+module.exports ={
+  BankAdapter
+}
