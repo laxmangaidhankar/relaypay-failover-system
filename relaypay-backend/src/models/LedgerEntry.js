@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const ledgeEntrySchema = new mongoose.Schema({
+const ledgerEntrySchema = new mongoose.Schema({
   transactionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Transaction', required: true },
 
   // Which wallet this entry affects
@@ -36,8 +36,8 @@ ledgerEntrySchema.index({ transactionId: 1 });
 ledgerEntrySchema.index({ idempotencyKey: 1 }, { unique: true });
 
 
-const LedgeEntry = mongoose.model("LedgeEntry", ledgeEntrySchema);
+const LedgerEntry = mongoose.model("LedgerEntry", ledgerEntrySchema);
 
 module.exports = {
-  LedgeEntry
+  LedgerEntry
 }
