@@ -5,7 +5,7 @@ const ledgerEntrySchema = new mongoose.Schema({
 
   // Which wallet this entry affects
   walletId: { type: mongoose.Schema.Types.ObjectId, ref: 'Wallet', required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // denormalized for fast queries
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
 
   // Double-entry core
   entryType: { type: String, enum: ['DEBIT', 'CREDIT'], required: true },

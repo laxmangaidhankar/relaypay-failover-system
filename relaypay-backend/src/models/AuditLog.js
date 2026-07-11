@@ -15,7 +15,7 @@ const auditLogSchema = new mongoose.Schema({
   },
 
   // Who/what it relates to
-  actorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // who performed the action (null = system)
+  actorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, 
   transactionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Transaction', default: null },
 
   // State transition record (for FSM events specifically)
