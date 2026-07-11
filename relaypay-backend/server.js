@@ -1,9 +1,11 @@
-const app = require("./src/app");
+const env = require('./src/config/env');
+const { connectToMongoDB } = require('./src/config/db');
 
-const port = process.env.PORT || 3000;
+const {app} = require('./src/app');
 
-if (require.main === module) {
-  console.log(`Relaypay backend scaffold ready on port ${port}.`);
-}
+connectToMongoDB();
 
-module.exports = { app, port };
+const PORT = env.PORT  
+app.listen(PORT, () => {
+  console.log(`server running on http://localhost:${PORT}`);
+})
