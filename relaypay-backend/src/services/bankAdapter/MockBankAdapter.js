@@ -1,4 +1,4 @@
-const uuid = require("uuid");
+const { v4: uuidv4 } = require("uuid");
 
 const { BankAdapter } = require("./BankAdapter");
 const { Wallet } = require("../../models/Wallet");
@@ -47,15 +47,11 @@ class MockBankAdapter extends BankAdapter {
     return "NETWORK_TIMEOUT"; // fallback
   }
 
-
-
-
-  async checkBalance(virtualAccountId) {
-    const accountId = await Wallet.findById(virtualAccountId);
-    if (!accountId) {
-      throw new Error(`${accountId} not found`);
-      return accountId.balance;
-    }
+  async checkBalance(accountId) {
+    const wallet = await Wallet.findById(accountId);
+    if (!wallet)
+      throw new Error(`MockBankAdapter: wallet ${accountId} not found`);
+    return wallet.balance;
   }
 
   async initiateTransfer({
@@ -64,15 +60,11 @@ class MockBankAdapter extends BankAdapter {
     amount,
     transactionId,
   }) {
-    
     await this._injectLatency();
 
     if (this.config.forceFailure) {
       throw this._buildError(this.config.forceFailure);
     }
- 
-
-
 
     const fromWallet = await Wallet.findById(fromAccountId);
 
@@ -100,26 +92,26 @@ class MockBankAdapter extends BankAdapter {
       );
     }
 
-
-    const shouldSimulateFailure = Math.random() < this.config.simulatedFailureRate;
+    const shouldSimulateFailure =
+      Math.random() < this.config.simulatedFailureRate;
     if (shouldSimulateFailure) {
       const failureType = this._pickWeightedSimulatedFailure();
       throw this._buildError(failureType);
     }
- 
+
     // --- Success path ---
     return {
-      bankReferenceId: `MOCKBANK-${uuid()}`,
-      status: 'SUCCESS',
+      bankReferenceId: `MOCKBANK-${uuidv4()}`,
+      status: "SUCCESS",
       processedAt: new Date(),
     };
   }
 
   async getTransferStatus(bankReferenceId) {
-    return { status: 'SUCCESS', bankReferenceId };
+    return { status: "SUCCESS", bankReferenceId };
   }
 
- _resetDailyCounterIfNeeded(wallet) {
+  _resetDailyCounterIfNeeded(wallet) {
     const now = new Date();
     const resetAt = new Date(wallet.dailyResetAt);
     const isNewDay = now.toDateString() !== resetAt.toDateString();
@@ -128,28 +120,27 @@ class MockBankAdapter extends BankAdapter {
       wallet.dailyResetAt = now;
     }
   }
- 
+
   _buildError(failureType) {
     switch (failureType) {
-      case 'INSUFFICIENT_BALANCE':
+      case "INSUFFICIENT_BALANCE":
         return new BankInsufficientBalanceError();
-      case 'NETWORK_TIMEOUT':
+      case "NETWORK_TIMEOUT":
         return new BankTimeoutError();
-      case 'BANK_SERVER_ERROR':
+      case "BANK_SERVER_ERROR":
         return new BankServerError();
-      case 'DAILY_LIMIT_EXCEEDED':
+      case "DAILY_LIMIT_EXCEEDED":
         return new DailyLimitExceededError();
-      case 'WALLET_FROZEN':
+      case "WALLET_FROZEN":
         return new WalletFrozenError();
       default:
-        return new BankServerError(`Unknown forced failure type: ${failureType}`);
+        return new BankServerError(
+          `Unknown forced failure type: ${failureType}`,
+        );
     }
   }
 }
- 
+
 module.exports = {
-  MockBankAdapter
+  MockBankAdapter,
 };
-
-  
-
