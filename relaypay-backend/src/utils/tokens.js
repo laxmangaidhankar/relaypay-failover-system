@@ -21,7 +21,11 @@ function generateAccessToken(user) {
 
 function generateRefreshToken(user, tokenFamily, version) {
   return jwt.sign(
-    { sub: user._id.toString(), family: tokenFamily, version },
+    { 
+      sub: user._id.toString(),
+      family: tokenFamily, 
+      version 
+    },
     REFRESH_TOKEN_SECRET,
     { expiresIn: REFRESH_TOKEN_EXPIRY }
   );
