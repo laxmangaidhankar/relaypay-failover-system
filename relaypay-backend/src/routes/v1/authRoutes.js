@@ -10,6 +10,4 @@ authRouter.post('/refresh', refresh);
 authRouter.post('/logout', logout);
 
 
-module.exports = {
-  authRouter,
-}
+module.exports = authRouter;
