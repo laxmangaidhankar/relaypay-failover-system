@@ -1,9 +1,9 @@
 const bcrypt = require("bcrypt");
 const env = require("../config/env");
 
-const { User } = require("../models/User");
-const { Wallet } = require("../models/Wallet");
-const { AuditLog } = require("../models/AuditLog");
+const User  = require("../models/User");
+const Wallet = require("../models/Wallet");
+const AuditLog = require("../models/AuditLog");
 
 const {
   generateAccessToken,
