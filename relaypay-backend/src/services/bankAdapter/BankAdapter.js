@@ -15,6 +15,4 @@ class BankAdapter {
 }
 
 
-module.exports ={
-  BankAdapter
-}
+module.exports = BankAdapter;

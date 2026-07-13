@@ -1,7 +1,7 @@
 // Atomic double-entry ledger operations will live here.
 const mongoose = require("mongoose");
-const { LedgerEntry } = require("../models/LedgerEntry");
-const { Wallet } = require("../models/Wallet");
+const LedgerEntry = require("../models/LedgerEntry");
+const Wallet = require("../models/Wallet");
 
 const {
   InsufficientBalanceError,
@@ -85,6 +85,8 @@ async function moveFunds({
         const newFromBalance = fromWallet.balance - amount;
         const newToBalance = toWallet.balance + amount;
 
+
+       
         const fromUpdateResult = await Wallet.updateOne(
           { _id: fromWalletId, version: fromVersionAtRead },
           { $set: { balance: newFromBalance }, $inc: { version: 1 } },

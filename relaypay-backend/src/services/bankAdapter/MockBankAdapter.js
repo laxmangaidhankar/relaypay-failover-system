@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 
-const { BankAdapter } = require("./BankAdapter");
-const { Wallet } = require("../../models/Wallet");
+const BankAdapter = require("./BankAdapter");
+const Wallet = require("../../models/Wallet");
 
 const {
   BankInsufficientBalanceError,
@@ -141,6 +141,4 @@ class MockBankAdapter extends BankAdapter {
   }
 }
 
-module.exports = {
-  MockBankAdapter,
-};
+module.exports = MockBankAdapter;
