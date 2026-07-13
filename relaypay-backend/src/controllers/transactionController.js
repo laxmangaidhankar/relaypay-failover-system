@@ -5,10 +5,11 @@ const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Wallet = require('../models/Wallet');
-const failoverEngine = require('../services/failoverEngine');
+
 
 //services
 const LedgerService = require('../services/ledgerService');
+const failoverEngine = require('../services/failoverEngine');
 
 
 /**
@@ -24,6 +25,9 @@ async function initiateTransaction(req, res, next) {
     
     if (!receiverId || !amount) {
       return res.status(400).json({ error: 'receiverIdentifier and amount are required' });
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Invalid amount");
     }
 
     if (amount <= 0) {
@@ -46,6 +50,8 @@ async function initiateTransaction(req, res, next) {
     if (String(receiver._id) === String(sender._id)) {
       return res.status(400).json({ error: 'Cannot send a payment to yourself' });
     }
+
+
 
 
     const transaction = await failoverEngine.initiatePayment({
@@ -106,7 +112,10 @@ async function listTransactions(req, res, next) {
       .sort({ createdAt: -1 })
       .limit(limit);
  
-    return res.status(200).json({ transactions });
+    return res.status(200).json({ 
+      message: "Transaction fetch",
+      transactions
+     });
  
   } catch (err) {
     next(err);
