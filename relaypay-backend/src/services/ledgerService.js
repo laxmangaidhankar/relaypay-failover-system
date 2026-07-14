@@ -62,8 +62,6 @@ async function moveFunds({
           Wallet.findById(toWalletId).session(session),
         ]);
 
-        console.log("fromWallet:", fromWallet);
-        console.log("toWallet:", toWallet);
 
         if (!fromWallet || !toWallet) {
           throw new Error("moveFunds: one or both wallets not found");

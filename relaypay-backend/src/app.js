@@ -2,7 +2,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 
-const { authRouter } = require("./routes/v1/authRoutes");
+const router = require("./routes/index");
 const {
   authRateLimiter,
   defaultRateLimiter,
@@ -15,8 +15,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1", authRateLimiter, defaultRateLimiter, approvalRateLimiter);
 
-app.use("/api/v1/auth", authRouter);
+app.use("/api/v1", router);
 
-module.exports = {
-  app,
-};
+module.exports = app;

@@ -6,14 +6,20 @@ const logger = require('../utils/logger');
 const MONGO_TEST_URI = process.env.MONGO_TEST_URI;
 
 
-async function connectToMongoDB() {
-  try {
-    await mongoose.connect(env.MONGO_TEST_URI);
-    logger.info("Database Connected");
-  } catch (err) {
-    logger.error("MongoDB Connection Failed:", err.message);
-    process.exit(1);
-  }
+async function connectDB() {
+  const uri = env.MONGO_TEST_URI;
+  if (!uri) throw new Error('MONGODB_URI is not set in env');
+ 
+  mongoose.connection.on('error', (err) => logger.error('MongoDB connection error', { error: err.message }));
+  mongoose.connection.on('disconnected', () => logger.warn('MongoDB disconnected'));
+ 
+  await mongoose.connect(uri);
+  logger.info('MongoDB connected');
 }
-
-module.exports = connectToMongoDB;
+ 
+async function disconnectDB() {
+  await mongoose.connection.close();
+  logger.info('MongoDB disconnected gracefully');
+}
+ 
+module.exports = { connectDB, disconnectDB };

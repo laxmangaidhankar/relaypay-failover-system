@@ -1,5 +1,5 @@
 const { verifyAccessToken } = require('../utils/tokens');
-const {User} = require('../models/User');
+const User = require('../models/User');
 
 async function requireAuth(req, res, next) {
   try {

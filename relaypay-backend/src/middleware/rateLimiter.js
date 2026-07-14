@@ -1,4 +1,3 @@
-
 const rateLimit = require('express-rate-limit');
  
 // Tighter limit on auth endpoints — these are the highest-value abuse surface
