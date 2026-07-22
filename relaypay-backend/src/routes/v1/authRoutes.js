@@ -1,13 +1,21 @@
 const express = require('express');
 const authRouter = express.Router();
 
-const { register, login, refresh, logout } = require('../../controllers/authController');
-const { authRateLimiter } = require('../../middleware/rateLimiter');
+const {checkIfExist, loginMpin, registerMpin, refresh, logout, requestOtp, verifyOtp} = require('../../controllers/authController');
+const { requestOtpLimiter, verifyOtpLimiter, checkMobileLimiter, loginLimiter } = require("../../middleware/rateLimiter");
 
-authRouter.post('/register', authRateLimiter, register);
-authRouter.post('/login', authRateLimiter,  login);
+
+
 authRouter.post('/refresh', refresh);
 authRouter.post('/logout', logout);
+
+authRouter.post("/request-otp", requestOtpLimiter, requestOtp);
+authRouter.post("/verify-otp", verifyOtpLimiter, verifyOtp);
+authRouter.post("/check-mobile", checkMobileLimiter, checkIfExist);
+
+authRouter.post("/login", loginLimiter, loginMpin);
+
+authRouter.post("/register", registerMpin);
 
 
 module.exports = authRouter;

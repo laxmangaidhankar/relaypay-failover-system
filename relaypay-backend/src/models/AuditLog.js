@@ -22,6 +22,7 @@ const auditLogSchema = new mongoose.Schema(
         "FAMILY_MEMBER_INVITED",
         "FAMILY_MEMBER_ACCEPTED",
         "WALLET_FROZEN",
+        "REGISTER_SUCCESS",
       ],
     },
 

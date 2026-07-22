@@ -11,6 +11,7 @@ const requiredEnvVariables = [
   "ACCESS_TOKEN_SECRET",
   "REFRESH_TOKEN_SECRET",
   "CLIENT_ORIGIN",
+  "OTP_VERIFICATION_SECRET",
 ];
 
 requiredEnvVariables.forEach((key) => {
@@ -28,4 +29,5 @@ module.exports = {
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
   CLIENT_ORIGIN: process.env.CLIENT_ORIGIN,
+  OTP_VERIFICATION_SECRET:process.env.OTP_VERIFICATION_SECRET,
 };

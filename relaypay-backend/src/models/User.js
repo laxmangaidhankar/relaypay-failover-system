@@ -2,28 +2,13 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
     phone: {
       type: String,
       required: true,
       unique: true,
     },
 
-    password: {
-      type: String,
-      required: true,
-      select: false,
-    },
+    
     refreshTokenFamily: {
       type: String,
       default: null,
@@ -31,6 +16,11 @@ const userSchema = new mongoose.Schema(
     refreshTokenVersion: {
       type: Number,
       default: 0,
+    },
+     loginPin: {
+        type: String,
+        required: true,
+        select: false
     },
 
     transactionPin: {
