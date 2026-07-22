@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const env = require("../config/env");
 
 const User = require("../models/User");
-const Wallet = require("../models/Wallet");
 const AuditLog = require("../models/AuditLog");
 const Otp = require("../models/Otp");
 
@@ -19,15 +18,9 @@ const {
 } = require("../utils/tokens");
 
 const SALT_ROUNDS = 12;
-const SEED_WALLET_BALANCE = 10000;
-
-// --- Validation helpers -----------------------------------------------
-// Centralised so every entry point applies the same rules instead of
-// trusting req.body shape (prevents NoSQL-operator injection like
-// { "phone": { "$ne": null } } from ever reaching a Mongo query).
 const PHONE_REGEX = /^[6-9]\d{9}$/;
-const OTP_REGEX = /^\d{6}$/; // adjust to match whatever otpService actually generates
-const PIN_REGEX = /^\d{4}$/; // 4 digit MPIN
+const OTP_REGEX = /^\d{6}$/;
+const PIN_REGEX = /^\d{4}$/;
 
 function isValidPhone(phone) {
   return typeof phone === "string" && PHONE_REGEX.test(phone);
@@ -39,7 +32,6 @@ function isValidOtp(otp) {
 
 function isValidPin(pin) {
   if (typeof pin !== "string" || !PIN_REGEX.test(pin)) return false;
-  // reject trivially guessable PINs
   const trivial = [
     "0000",
     "1234",
@@ -65,10 +57,6 @@ const REFRESH_COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
-// Short-lived token proving a phone number just completed OTP verification.
-// registerMpin() requires this before it will create an account — without
-// it, OTP verification was purely decorative and register could be called
-// directly with any unverified phone number.
 const OTP_VERIFICATION_EXPIRY = "5m";
 
 function issueOtpVerificationToken(phone, purpose) {
@@ -104,13 +92,13 @@ async function requestOtp(req, res) {
     const user = await User.findOne({ phone });
     const purpose = user ? "LOGIN" : "REGISTER";
 
-    if(purpose === "LOGIN"){
+    if (purpose === "LOGIN") {
       return res.status(409).json({
-        msg: "User already registered"
+      success: false,
+      error: "User already registered"
       });
     }
     const otp = await generateOtp();
-    
 
     await Otp.findOneAndUpdate(
       { phone },
@@ -151,8 +139,6 @@ async function verifyOtp(req, res) {
         .json({ error: "Valid mobile number and OTP are required" });
     }
 
-    // expiresAt must be checked explicitly — a matching document existing
-    // doesn't mean it's still valid, only that nothing has overwritten it yet.
     const record = await Otp.findOne({
       phone,
       expiresAt: { $gt: new Date() },
@@ -226,8 +212,6 @@ async function loginMpin(req, res) {
 
     const user = await User.findOne({ phone }).select("+loginPin");
 
-    // Same response whether the user doesn't exist or the PIN is wrong —
-    // avoids leaking which phone numbers are registered via this endpoint.
     const invalidCredentials = () =>
       res.status(401).json({ error: "Invalid credentials" });
 
@@ -282,11 +266,11 @@ async function loginMpin(req, res) {
       message: "Login successful",
       user: {
         id: user._id,
-        name: user.name,
-        email: user.email,
-        walletId: user.walletId,
+        phone: user.phone,
       },
       accessToken,
+      refreshToken,
+      expiresIn: 800,
     });
   } catch (err) {
     console.error("loginMpin error:", err);
@@ -323,20 +307,25 @@ async function registerMpin(req, res) {
       });
     }
 
+    const existingUser = await User.findOne({ phone });
+
+    if (existingUser) {
+      return res.status(409).json({
+        error: "User already exists",
+      });
+    }
+
     const loginPinHash = await bcrypt.hash(loginPin, SALT_ROUNDS);
 
-    const user = await User.create({ phone, loginPin: loginPinHash, isVerified:true });
-
-    const wallet = await Wallet.create({
-      userId: user._id,
-      balance: SEED_WALLET_BALANCE,
+    const user = await User.create({
+      phone,
+      loginPin: loginPinHash,
+      isVerified: true,
     });
 
-    user.walletId = wallet._id;
-    await user.save();
 
     await AuditLog.create({
-      eventType: "REGISTER_SUCCESS", 
+      eventType: "REGISTER_SUCCESS",
       actorId: user._id,
       ipAddress: req.ip,
       userAgent: req.headers["user-agent"],
@@ -345,19 +334,18 @@ async function registerMpin(req, res) {
     const { accessToken, refreshToken } = await issueTokenPair(user);
     res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
 
-     return res.status(201).json({
-            message: "Account created successfully",
-            user: {
-                id: user._id,
-                phone: user.phone,
-                walletId: user.walletId
-            },
-            accessToken,
-            refreshToken,
-            expiresIn: 900 // keep this in sync with your JWT_EXPIRY env/config, don't hardcode separately from what generateAccessToken actually signs
-        });
-       }
-        catch (err) {
+    return res.status(201).json({
+      success: true,
+      message: "Account created successfully",
+      user: {
+        id: user._id,
+        phone: user.phone,
+      },
+      accessToken,
+      refreshToken,
+      expiresIn: 900,
+    });
+  } catch (err) {
     console.error(err);
 
     return res.status(500).json({
@@ -374,7 +362,7 @@ async function registerMpin(req, res) {
  */
 async function refresh(req, res) {
   try {
-    const token = req.cookies?.refreshToken;
+    const token = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!token) {
       return res.status(401).json({ error: "Refresh token not provided" });
@@ -419,9 +407,12 @@ async function refresh(req, res) {
       user,
       user.refreshTokenFamily,
     );
-    res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-
-    return res.status(200).json({ accessToken });
+    return res.status(200).json({
+      success: true, 
+      accessToken,
+      refreshToken,
+      expiresIn: 900
+     });
   } catch (err) {
     console.error("refresh error:", err);
     return res.status(500).json({ error: "Token refresh failed" });
@@ -433,25 +424,37 @@ async function refresh(req, res) {
  */
 async function logout(req, res) {
   try {
-    const token = req.cookies?.refreshToken;
-    if (token) {
+    const { refreshToken } = req.body;
+
+    if (refreshToken) {
       try {
-        const payload = verifyRefreshToken(token);
+        const payload = verifyRefreshToken(refreshToken);
+
         const user = await User.findById(payload.sub);
+
         if (user) {
           user.refreshTokenFamily = null;
           user.refreshTokenVersion += 1;
           await user.save();
         }
+
       } catch {
-        // token already invalid/expired — nothing to revoke, fall through to clearing the cookie
+        
       }
     }
-    res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
-    return res.status(200).json({ message: "Logged out" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully"
+    });
+
   } catch (err) {
     console.error("logout error:", err);
-    return res.status(500).json({ error: "Logout failed" });
+
+    return res.status(500).json({
+      success: false,
+      error: "Logout failed"
+    });
   }
 }
 
