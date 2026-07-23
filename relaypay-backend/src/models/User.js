@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
 
-    
     refreshTokenFamily: {
       type: String,
       default: null,
@@ -38,11 +37,6 @@ const userSchema = new mongoose.Schema(
     },
     lastLoginAt: {
       type: Date,
-    },
-
-    walletId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Wallet",
     },
 
     failedLoginAttempts: {
