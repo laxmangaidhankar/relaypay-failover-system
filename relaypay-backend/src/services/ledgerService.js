@@ -1,7 +1,6 @@
 // Atomic double-entry ledger operations will live here.
 const mongoose = require("mongoose");
 const LedgerEntry = require("../models/LedgerEntry");
-const Wallet = require("../models/Wallet");
 
 const {
   InsufficientBalanceError,

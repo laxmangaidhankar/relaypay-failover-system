@@ -1,7 +1,6 @@
 const { v4: uuidv4 } = require("uuid");
 
 const BankAdapter = require("./BankAdapter");
-const Wallet = require("../../models/Wallet");
 
 const {
   BankInsufficientBalanceError,
