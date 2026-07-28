@@ -18,11 +18,7 @@ const familyCircleSchema = new mongoose.Schema(
           ref: "User",
           required: true,
         },
-        walletId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Wallet",
-          required: true,
-        },
+      
         priority: { type: Number, required: true, default: 1 }, // 1 = tried first
 
         // Consent — never assume, always record explicit opt-in
@@ -36,10 +32,25 @@ const familyCircleSchema = new mongoose.Schema(
 
         // Guardrails per member
         maxRelayAmount: { type: Number, default: 5000 }, // this contact auto-caps at this amount
-        dailyRelayLimit: { type: Number, default: 10000 },
+        dailyRelayLimit: { type: Number, default: 1000 },
         dailyRelayUsed: { type: Number, default: 0 },
+
+        relationship: {
+    type: String,
+    enum: [
+        "Father",
+        "Mother",
+        "Brother",
+        "Sister",
+        "Spouse",
+        "Friend",
+        "Other"
+    ],
+    default: "Other"
+}
       },
     ],
+
 
     // Circle-level settings
     autoApproveThreshold: { type: Number, default: 0 }, // 0 = always needs manual approval; >0 = auto-approve under this amount

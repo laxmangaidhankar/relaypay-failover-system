@@ -9,9 +9,9 @@ const ledgerEntrySchema = new mongoose.Schema(
     },
 
     // Which wallet this entry affects
-    walletId: {
+    bankId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Wallet",
+      ref: "LinkedBank",
       required: true,
     },
     userId: {

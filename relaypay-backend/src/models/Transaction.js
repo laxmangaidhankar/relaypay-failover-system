@@ -12,9 +12,9 @@ const transactionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    senderWalletId: {
+    senderBankId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Wallet",
+      ref: "LinkedBank",
       required: true,
     },
     receiverId: {
@@ -22,9 +22,9 @@ const transactionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    receiverWalletId: {
+    receiverBankId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Wallet",
+      ref: "LinkedBank",
       required: true,
     },
 
@@ -73,7 +73,7 @@ const transactionSchema = new mongoose.Schema(
       },
       backupWalletId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Wallet",
+        ref: "LinkedBank",
         default: null,
       },
       requestedAt: { type: Date, default: null },
@@ -97,7 +97,7 @@ const transactionSchema = new mongoose.Schema(
     settledAt: { type: Date, default: null },
 
     // Metadata
-    note: { type: String, maxlength: 200 },
+    paymentNote: { type: String, maxlength: 200 },
   },
   { timestamps: true },
 );
