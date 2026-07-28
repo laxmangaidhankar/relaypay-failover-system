@@ -9,10 +9,6 @@ const failoverEngine  = require('../services/failoverEngine');
  */
 async function listPendingRelays(req, res, next){
   try{
-
-
-    
-    
     console.log(req.user);
     
     const transactions = await Transaction.findOne({

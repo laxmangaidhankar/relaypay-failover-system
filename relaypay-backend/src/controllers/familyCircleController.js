@@ -1,6 +1,6 @@
 const FamilyCircle = require("../models/FamilyCircle");
 const User = require("../models/User");
-const Wallet = require("../models/Wallet");
+// const Wallet = require("../models/Wallet");
 const AuditLog = require("../models/AuditLog");
 
 /**
@@ -8,7 +8,7 @@ const AuditLog = require("../models/AuditLog");
  * Returns the current user's own circle (contacts they've added as backups).
  */
 
-async function getMyCircle(req, res) {
+async function getMyCircle(req, res,next) {
   try {
     const circle = await FamilyCircle.findOne({
       ownerId: req.user.id,
@@ -69,7 +69,7 @@ async function inviteMember(req, res, next) {
 
     circle.members.push({
       userId: contact._id,
-      walletId: contact.walletId,
+      // walletId: contact.walletId,
       priority: priority || circle.members.length + 1,
       maxRelayAmount: maxRelayAmount || 5000,
       dailyRelayLimit: dailyRelayLimit || 10000,

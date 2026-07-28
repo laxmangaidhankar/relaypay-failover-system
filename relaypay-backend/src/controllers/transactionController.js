@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require('uuid');
 //models
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
-const Wallet = require('../models/Wallet');
 
 
 //services
@@ -34,14 +33,20 @@ async function initiateTransaction(req, res, next) {
       return res.status(400).json({ error: 'amount must be positive' });
     }
 
-    const sender = await User.findById(req.user.id);
-    if (!sender?.walletId) {
-      return res.status(400).json({ error: 'Sender has no wallet' });
-    }
+    const senderBank = await LinkedBank.findOne({
+    userId: req.user.id,
+    isPrimary: true
+});
 
-    const receiver = await User.findOne({
-      $or: [{ email: receiverId }, { phone: receiverId }],
+if (!senderBank) {
+    return res.status(400).json({
+        error: "Please link a bank account first."
     });
+}
+
+   const receiver = await User.findOne({
+    phone: receiverId
+});
 
     if (!receiver?.walletId) {
       return res.status(404).json({ error: 'Receiver not found or has no wallet' });
